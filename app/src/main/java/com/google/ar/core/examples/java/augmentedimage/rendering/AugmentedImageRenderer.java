@@ -63,7 +63,7 @@ public class AugmentedImageRenderer {
     imageFrameLowerRight.setBlendMode(BlendMode.SourceAlpha);
 
     menuObject.createOnGlThread(
-            context, "models/andy.obj", "models/andy.png");
+        context, "models/andy.obj", "models/andy.png");
     menuObject.setMaterialProperties(0.0f, 0.0f, 0.0f, 0.0f);
     menuObject.setBlendMode(BlendMode.SourceAlpha);
   }
