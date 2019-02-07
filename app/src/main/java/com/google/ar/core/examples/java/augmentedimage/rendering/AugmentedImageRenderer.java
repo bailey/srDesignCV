@@ -36,6 +36,7 @@ public class AugmentedImageRenderer {
   private final ObjectRenderer imageFrameUpperRight = new ObjectRenderer();
   private final ObjectRenderer imageFrameLowerLeft = new ObjectRenderer();
   private final ObjectRenderer imageFrameLowerRight = new ObjectRenderer();
+  private final ObjectRenderer menuObject = new ObjectRenderer();
 
   public AugmentedImageRenderer() {}
 
@@ -60,6 +61,11 @@ public class AugmentedImageRenderer {
         context, "models/frame_lower_right.obj", "models/frame_base.png");
     imageFrameLowerRight.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
     imageFrameLowerRight.setBlendMode(BlendMode.SourceAlpha);
+
+    menuObject.createOnGlThread(
+            context, "models/andy.obj", "models/andy.png");
+    menuObject.setMaterialProperties(0.0f, 0.0f, 0.0f, 0.0f);
+    menuObject.setBlendMode(BlendMode.SourceAlpha);
   }
 
   public void draw(
@@ -71,33 +77,37 @@ public class AugmentedImageRenderer {
     float[] tintColor =
         convertHexToColor(TINT_COLORS_HEX[augmentedImage.getIndex() % TINT_COLORS_HEX.length]);
 
-    Pose[] localBoundaryPoses = {
-      Pose.makeTranslation(
-          -0.5f * augmentedImage.getExtentX(),
-          0.0f,
-          -0.5f * augmentedImage.getExtentZ()), // upper left
-      Pose.makeTranslation(
-          0.5f * augmentedImage.getExtentX(),
-          0.0f,
-          -0.5f * augmentedImage.getExtentZ()), // upper right
-      Pose.makeTranslation(
-          0.5f * augmentedImage.getExtentX(),
-          0.0f,
-          0.5f * augmentedImage.getExtentZ()), // lower right
-      Pose.makeTranslation(
-          -0.5f * augmentedImage.getExtentX(),
-          0.0f,
-          0.5f * augmentedImage.getExtentZ()) // lower left
+    Pose[] localBoundaryPoses = new Pose[]{
+            Pose.makeTranslation(
+                    -0.5f * augmentedImage.getExtentX(),
+                    0.0f,
+                    -0.5f * augmentedImage.getExtentZ()), // upper left
+            Pose.makeTranslation(
+                    0.5f * augmentedImage.getExtentX(),
+                    0.0f,
+                    -0.5f * augmentedImage.getExtentZ()), // upper right
+            Pose.makeTranslation(
+                    0.5f * augmentedImage.getExtentX(),
+                    0.0f,
+                    0.5f * augmentedImage.getExtentZ()), // lower right
+            Pose.makeTranslation(
+                    -0.5f * augmentedImage.getExtentX(),
+                    0.0f,
+                    0.5f * augmentedImage.getExtentZ()), // lower left
+            Pose.makeTranslation(
+                    0.0f * augmentedImage.getExtentX(),
+                    0.0f,
+                    0.0f * augmentedImage.getExtentZ()) // menuObject
     };
 
     Pose anchorPose = centerAnchor.getPose();
-    Pose[] worldBoundaryPoses = new Pose[4];
-    for (int i = 0; i < 4; ++i) {
+    Pose[] worldBoundaryPoses = new Pose[5];
+    for (int i = 0; i < 5; ++i) {
       worldBoundaryPoses[i] = anchorPose.compose(localBoundaryPoses[i]);
     }
 
-    float scaleFactor = 1.0f;
-    float[] modelMatrix = new float[16];
+    float scaleFactor = 0.5f;
+    float[] modelMatrix = new float[20];
 
     worldBoundaryPoses[0].toMatrix(modelMatrix, 0);
     imageFrameUpperLeft.updateModelMatrix(modelMatrix, scaleFactor);
@@ -114,6 +124,10 @@ public class AugmentedImageRenderer {
     worldBoundaryPoses[3].toMatrix(modelMatrix, 0);
     imageFrameLowerLeft.updateModelMatrix(modelMatrix, scaleFactor);
     imageFrameLowerLeft.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
+
+    worldBoundaryPoses[4].toMatrix(modelMatrix, 0);
+    menuObject.updateModelMatrix(modelMatrix, scaleFactor);
+    menuObject.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
   }
 
   private static float[] convertHexToColor(int colorHex) {
